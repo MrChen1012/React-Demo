@@ -1,4 +1,4 @@
-import { useEffect, forwardRef, useImperativeHandle } from 'react'
+import { useEffect, forwardRef, useImperativeHandle, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import useControlledState from '../hooks/useControlledState'
 import './index.scss'
@@ -11,15 +11,22 @@ const Modal = forwardRef((props, ref) => {
     close: () => setIsOpen(false)
   }))
 
-  // 创建 Portal 挂载节点
-  const portalRoot = document.createElement('div')
+  const portalRootRef = useRef(null)
 
   useEffect(() => {
-    document.body.appendChild(portalRoot)
-    return () => {
-      document.body.removeChild(portalRoot)
+    if (!portalRootRef.current) {
+      portalRootRef.current = document.createElement('div')
+      document.body.appendChild(portalRootRef.current)
     }
-  }, [portalRoot])
+
+    return () => {
+      // 确保安全移除
+      if (document.body.contains(portalRootRef.current)) {
+        document.body.removeChild(portalRootRef.current)
+      }
+      portalRootRef.current = null // 避免空引用
+    }
+  }, [])
 
   return isOpen
     ? ReactDOM.createPortal(
@@ -33,7 +40,7 @@ const Modal = forwardRef((props, ref) => {
             </div>
           </div>
         </div>,
-        portalRoot
+        portalRootRef.current
       )
     : null
 })
