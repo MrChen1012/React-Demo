@@ -9,6 +9,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  animation: overlayFadeIn 0.3s ease;
+
+  &.exiting {
+    animation: overlayFadeIn 0.3s ease reverse;
+  }
 }
 
 .modal {
@@ -16,6 +21,12 @@
   padding: 20px;
   border-radius: 8px;
   min-width: 300px;
+  animation: modalFadeIn 0.3s ease forwards;
+
+  // 离场动画
+  &.exiting {
+    animation: modalFadeOut 0.3s ease forwards;
+  }
 }
 
 .modal-footer {
@@ -27,4 +38,37 @@ button {
   margin-left: 10px;
   padding: 6px 12px;
   cursor: pointer;
+}
+
+// 新增动画定义
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+// 新增遮罩层动画
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

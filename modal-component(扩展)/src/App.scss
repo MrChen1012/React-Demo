@@ -1,0 +1,15 @@
+.App {
+  position: relative;
+  text-align: center;
+  > button {
+    margin: 400px auto;
+  }
+  .tips {
+    position: absolute;
+    top: 440px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    z-index: 999;
+    background: pink;
+  }
+}
