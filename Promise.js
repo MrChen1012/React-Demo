@@ -1,8 +1,8 @@
 // 手撸一个Promise
 class MyPromise {
-  static PENDING = '待定'
-  static FULFILLED = '完成'
-  static REJECTED = '拒绝'
+  static PENDING = 'pending'
+  static FULFILLED = 'fulfilled'
+  static REJECTED = 'rejected'
   constructor(executor) {
     this.state = MyPromise.PENDING // 初始状态
     this.value = null // 成功值
