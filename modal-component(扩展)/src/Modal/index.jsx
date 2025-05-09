@@ -1,45 +1,59 @@
-import { useEffect, forwardRef, useImperativeHandle, useRef } from 'react'
+import { useEffect, forwardRef, useImperativeHandle, useRef, useState, useCallback } from 'react'
 import ReactDOM from 'react-dom'
 import useControlledState from '../hooks/useControlledState'
+import usePortal from '../hooks/usePortal'
+import { useCloseOnEsc, useCloseOverlayClick } from '../hooks/useCloseHandlers'
 import './index.scss'
 
-const Modal = forwardRef((props, ref) => {
-  const [isOpen, setIsOpen] = useControlledState(props.isOpen, props.onChange, false)
+const Modal = forwardRef(
+  (
+    {
+      isOpen: controlledIsOpen,
+      onChange,
+      title,
+      children,
+      defaultOpen,
+      closeOnEsc = true,
+      closeOnOverlayClick = true
+    },
+    ref
+  ) => {
+    const [isOpen, setIsOpen] = useControlledState(controlledIsOpen, onChange, defaultOpen || false)
+    const [portalRootRef, isPortalReady] = usePortal()
 
-  useImperativeHandle(ref, () => ({
-    open: () => setIsOpen(true),
-    close: () => setIsOpen(false)
-  }))
+    useImperativeHandle(ref, () => ({
+      open: () => setIsOpen(true),
+      close: () => setIsOpen(false)
+    }))
 
-  const portalRootRef = useRef(null)
+    // 统一关闭处理函数
+    const handleClose = useCallback(() => {
+      setIsOpen(false)
+      onChange?.(false)
+    }, [setIsOpen, onChange])
 
-  useEffect(() => {
-    const portalRoot = document.createElement('div')
-    document.body.appendChild(portalRoot)
-    portalRootRef.current = portalRoot
+    // ESC关闭功能
+    useCloseOnEsc(handleClose, isOpen, closeOnEsc)
 
-    return () => {
-      if (portalRootRef.current) {
-        document.body.removeChild(portalRootRef.current)
-      }
-    }
-  }, [])
+    // 遮罩层点击关闭
+    useCloseOverlayClick(handleClose, closeOnOverlayClick)
 
-  return isOpen
-    ? ReactDOM.createPortal(
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>{props.title}</h3>
-            <div className="modal-body">{props.children}</div>
-            <div className="modal-footer">
-              <button onClick={() => setIsOpen(false)}>确认</button>
-              <button onClick={() => setIsOpen(false)}>取消</button>
+    return isOpen && isPortalReady
+      ? ReactDOM.createPortal(
+          <div className="modal-overlay" onClick={handleOverlayClick}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <h3>{title}</h3>
+              <div className="modal-body">{children}</div>
+              <div className="modal-footer">
+                <button onClick={handleClose}>确认</button>
+                <button onClick={handleClose}>取消</button>
+              </div>
             </div>
-          </div>
-        </div>,
-        portalRootRef.current
-      )
-    : null
-})
+          </div>,
+          portalRootRef.current
+        )
+      : null
+  }
+)
 
 export default Modal
